@@ -16,8 +16,9 @@ public class Nodo {
         this.fecha = fecha;
         this.Liga= null;
     }
+   
 
-    public boolean isSw() {
+    public boolean getSw() {
         return sw;
     }
 

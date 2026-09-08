@@ -9,6 +9,7 @@ package arboleslg;
  * @author sala208
  */
 public class ArbolesLG {
+    Arbol arbol;
 //    DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 //
 //System.out.println(fechaNacimiento.format(formato));
