@@ -31,7 +31,7 @@ public class Arbol {
     public void setRaiz(Nodo raiz) {
         this.raiz = raiz;
     }
-
+Arbol arbol;
     
     public void Insertar(){
         String nombre = JOptionPane.showInputDialog("Ingresa el nombre de la persona: ");
@@ -41,7 +41,7 @@ public class Arbol {
        LocalDate fecha=LocalDate.parse(fechaTexto, formato);
 
         Nodo nuevo=new Nodo(nombre,Cedula,fecha);
-        if (raiz!=null){
+        if (raiz==null){
             raiz=nuevo;
         }
         else{
@@ -67,7 +67,7 @@ public class Arbol {
         Nodo p=raiz;
         while (p!=null ){
             if(p.getSw()==false){
-                if(p.getCedula()==cedula){
+                if(p.getCedula().equals(cedula)){
                     return p;
                 }
                 p=p.getLiga();
@@ -88,15 +88,18 @@ public class Arbol {
         return null;
         
     }
-    public void Insertarhijo(Nodo padre, Nodo hijo){
-        if (padre instanceof NodoCabeza){ //padre es de tipo NodoCabeza?
-      
-        Nodo actual = padre;
-          while (actual.getLiga() != null && //organiza de hijo mayor a menor
-       actual.getLiga().getFecha().compareTo(hijo.getFecha()) < 0){
-    actual = actual.getLiga();
-}
-      
+
+    public void Insertarhijo(Nodo padre, Nodo hijo) {
+        if (padre instanceof NodoCabeza) { //padre es de tipo NodoCabeza?
+
+            Nodo actual = padre;
+            while (actual.getLiga() != null
+                    && //organiza de hijo mayor a menor
+                    actual.getLiga().getCedula().compareTo(hijo.getCedula()) < 0) {
+//       actual.getLiga().getFecha().compareTo(hijo.getFecha()) < 0){
+                actual = actual.getLiga();
+            }
+  
 
     hijo.setLiga(actual.getLiga());
     actual.setLiga(hijo);
@@ -107,5 +110,17 @@ public class Arbol {
         padre.setLigaLista(nuevo);
         nuevo.setLiga(hijo);
     }}
+    public void verArbol(){
+    if (arbol == null || arbol.getRaiz() == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.",
+                "Aviso",
+                JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    
+    VentanaArbol ventana = new VentanaArbol(arbol);
+    ventana.setVisible(true);
+}
 
 }

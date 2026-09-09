@@ -4,19 +4,54 @@
  */
 package arboleslg;
 
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author sala208
  */
 public class ArbolesLG {
-    Arbol arbol;
-//    DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-//
-//System.out.println(fechaNacimiento.format(formato));
+
+    public static void main(String[] args) {
+        Arbol arbol = new Arbol(null);
+        String[] opciones = {"Insertar persona", "Ver árbol", "Salir"};
+        int seleccion;
+
+        do {
+            seleccion = JOptionPane.showOptionDialog(
+                null,
+                "Selecciona una opción:",
+                "Menú - Árbol Genealógico",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                opciones,
+                opciones[0]
+            );
+
+            switch (seleccion) {
+                case 0:
+                    arbol.Insertar();
+                    break;
+                case 1:
+                    if (arbol.getRaiz() == null){
+                        JOptionPane.showMessageDialog(null, "Todavía no hay datos en el árbol.");
+                    } else {
+                        VentanaArbol ventana = new VentanaArbol(arbol);
+                        ventana.setVisible(true);
+                    }
+                    break;
+                case 2:
+                case -1: // si cierra la ventana con la X
+                    JOptionPane.showMessageDialog(null, "Saliendo...");
+                    break;
+            }
+
+        } while (seleccion != 2 && seleccion != -1);
+    }
+
+    
 
   
-    public static void main(String[] args) {
-        // TODO code application logic here
-    }
 //Hacer Menu     
 }
