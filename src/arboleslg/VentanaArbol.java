@@ -21,9 +21,9 @@ public class VentanaArbol extends javax.swing.JFrame {
      * Creates new form VentanaArbol
      */
    
-
     public VentanaArbol(Arbol arbol) {
         initComponents();
+        this.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE); // <-- agrega esto
         this.arbol1 = arbol;
 
         PanelArbol panel = new PanelArbol(arbol);

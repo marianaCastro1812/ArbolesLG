@@ -73,6 +73,10 @@ Arbol arbol;
                 p=p.getLiga();
                 
             }else{
+                if (p.getLigaLista().getCedula().equals(cedula)) {
+                    return p;
+                    
+                }
                 Nodo r=p.getLigaLista();
                 Nodo encontrado=BuscarPadre(r,cedula);
                 if (encontrado != null){
@@ -88,28 +92,39 @@ Arbol arbol;
         return null;
         
     }
+    
 
     public void Insertarhijo(Nodo padre, Nodo hijo) {
-        if (padre instanceof NodoCabeza) { //padre es de tipo NodoCabeza?
-
-            Nodo actual = padre;
+        if (padre!=raiz && !padre.getSw() ) {     
+        Nodo nuevo= new Nodo(padre.getNombre(),padre.getCedula(),padre.getFecha());
+        padre.setSw(true);
+        padre.setLigaLista(nuevo);
+        nuevo.setLiga(hijo);
+            
+        }else{
+           
+            if (padre.getSw()) {
+                padre=padre.getLigaLista();
+            }
+              Nodo actual = padre;
             while (actual.getLiga() != null
                     && //organiza de hijo mayor a menor
-                    actual.getLiga().getCedula().compareTo(hijo.getCedula()) < 0) {
-//       actual.getLiga().getFecha().compareTo(hijo.getFecha()) < 0){
+//                    actual.getLiga().getCedula().compareTo(hijo.getCedula()) < 0) {
+      actual.getLiga().getFecha().compareTo(hijo.getFecha()) < 0){
                 actual = actual.getLiga();
             }
   
 
     hijo.setLiga(actual.getLiga());
     actual.setLiga(hijo);
-        }else{
+         
+            
+        }
         
-        Nodo nuevo= new NodoCabeza(padre.getNombre(),padre.getCedula(),padre.getFecha());
-        padre.setSw(true);
-        padre.setLigaLista(nuevo);
-        nuevo.setLiga(hijo);
-    }}
+
+          
+        
+    }
     public void verArbol(){
     if (arbol == null || arbol.getRaiz() == null){
         JOptionPane.showMessageDialog(null,
@@ -122,5 +137,39 @@ Arbol arbol;
     VentanaArbol ventana = new VentanaArbol(arbol);
     ventana.setVisible(true);
 }
+//    public void eliminar(Nodo raiz,String cedula){
+//        Nodo p=raiz;
+//        if (p.getCedula().equals(cedula)) {
+//            arbol.setRaiz(p.getLiga());
+//            
+//        }else{
+//        while (p!=null)
+//        {
+//            if (p.getLiga().getSw()==false) {
+//                if (p.getLiga().getCedula().equals(cedula)) {
+//                    Nodo r=p.getLiga();
+//                    p.setLiga(r.getLiga());
+//                    return;
+//                
+//            }
+//            }else{
+//                p=p.getLiga();
+//                
+//                 if (p.getLigaLista().getCedula().equals(cedula)) {
+//                    Nodo r=p.getLigaLista();
+//                    p.setLigaLista(r.getLiga());
+//                    r.getLiga()
+//                    return;
+//                 }else{
+//                     p=p.getLigaLista();
+//                     eliminar(p,cedula);
+//                 }
+//               
+//                 
+//            }
+//            
+//            
+//                    
+//        }}}
 
 }
