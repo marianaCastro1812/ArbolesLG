@@ -180,28 +180,37 @@ public class ArbolesLG {
 
             switch (op){
                 case 0:
-                    String nivelEliminar = JOptionPane.showInputDialog("Número de generación a eliminar:");
-                    if (nivelEliminar != null && !nivelEliminar.isBlank()){
-                        JOptionPane.showMessageDialog(null, "TODO: eliminarNivel(" + nivelEliminar + ")");
+                 
+                    String nivelTexto = JOptionPane.showInputDialog("Número de generación a eliminar:");
+                    if (nivelTexto != null && !nivelTexto.isBlank()) {
+                        try {
+                            int nivel = Integer.parseInt(nivelTexto);
+                            arbol.eliminarNivel(nivel);
+                            JOptionPane.showMessageDialog(null, "Generación eliminada correctamente.");
+                        } catch (NumberFormatException e) {
+                            JOptionPane.showMessageDialog(null, "Debes ingresar un número válido.");
+                        }
                     }
                     break;
-                case 1:
-                    String ced1 = JOptionPane.showInputDialog("Cédula de la persona A:");
-                    String ced2 = JOptionPane.showInputDialog("Cédula de la persona B:");
-                    if (ced1 != null && ced2 != null){
-                        JOptionPane.showMessageDialog(null, "TODO: ancestroComun(" + ced1 + ", " + ced2 + ")");
-                    }
-                    break;
+               
+            case 1:
+                String ced1 = JOptionPane.showInputDialog("Cédula de la persona A:");
+                String ced2 = JOptionPane.showInputDialog("Cédula de la persona B:");
+                if (ced1 != null && ced2 != null && !ced1.isBlank() && !ced2.isBlank()){
+                    arbol.ancestroComun(ced1, ced2);
+                }
+                break;
                 case 2:
                     String cedA = JOptionPane.showInputDialog("Cédula de la persona A (a trasladar):");
                     String cedB = JOptionPane.showInputDialog("Cédula de la persona B (nuevo padre):");
-                    if (cedA != null && cedB != null){
-                        JOptionPane.showMessageDialog(null, "TODO: trasladarRama(" + cedA + ", " + cedB + ")");
+                    if (cedA != null && cedB != null && !cedA.isBlank() && !cedB.isBlank()) {
+                        arbol.trasladarRama(cedA, cedB);
                     }
-                    break;
+    break;
             }
         } while (op != 3 && op != -1);
     }
+    
 }    
 
   
