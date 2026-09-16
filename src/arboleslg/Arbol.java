@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package arboleslg;
 
 import java.time.LocalDate;
@@ -38,7 +34,7 @@ public class Arbol {
         String Cedula= JOptionPane.showInputDialog("Ingresa la cedula de la persona: ");
         String fechaTexto= JOptionPane.showInputDialog("Ingrese la fecha dd/MM/yyyy");
         DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-       LocalDate fecha=LocalDate.parse(fechaTexto, formato);
+        LocalDate fecha=LocalDate.parse(fechaTexto, formato);
 
         Nodo nuevo=new Nodo(nombre,Cedula,fecha);
         if (raiz==null){
@@ -300,7 +296,531 @@ public void actualizar(String cedula){
     }
 
     JOptionPane.showMessageDialog(null, "Datos actualizados correctamente.");
-}public void eliminarNivel(int nivelObjetivo){
+}
+
+
+/* ---------- 2. CONSULTAS DE RELACIONES FAMILIARES ---------- */
+
+// Busca una persona dentro de todo el árbol usando su cédula
+private Nodo buscarPersona(Nodo actual, String cedula){
+    if (actual == null){
+        return null;
+    }
+
+    if (actual.getCedula().equals(cedula)){
+        return actual;
+    }
+
+    Nodo encontrado = buscarPersona(actual.getLiga(), cedula);
+
+    if (encontrado != null){
+        return encontrado;
+    }
+
+    if (actual.getSw() && actual.getLigaLista() != null){
+        Nodo hijos = actual.getLigaLista().getLiga();
+
+        encontrado = buscarPersona(hijos, cedula);
+
+        if (encontrado != null){
+            return encontrado;
+        }
+    }
+
+    return null;
+}
+
+// Busca el padre directo de una persona usando su cédula
+private Nodo buscarPadreNodo(Nodo actual, String cedula){
+    if (actual == null){
+        return null;
+    }
+
+    Nodo hijo = actual.getLiga();
+
+    while (hijo != null){
+        if (hijo.getCedula().equals(cedula)){
+            return actual;
+        }
+
+        hijo = hijo.getLiga();
+    }
+
+    if (actual.getSw() && actual.getLigaLista() != null){
+        Nodo hijos = actual.getLigaLista().getLiga();
+
+        while (hijos != null){
+            if (hijos.getCedula().equals(cedula)){
+                return actual;
+            }
+
+            hijos = hijos.getLiga();
+        }
+    }
+
+    Nodo encontrado = buscarPadreNodo(actual.getLiga(), cedula);
+
+    if (encontrado != null){
+        return encontrado;
+    }
+
+    if (actual.getSw() && actual.getLigaLista() != null){
+        encontrado = buscarPadreNodo(
+                actual.getLigaLista().getLiga(),
+                cedula
+        );
+
+        if (encontrado != null){
+            return encontrado;
+        }
+    }
+
+    return null;
+}
+
+// Obtiene el primer hijo de una persona según la estructura del árbol
+private Nodo obtenerInicioHijos(Nodo persona){
+    if (persona == null){
+        return null;
+    }
+
+    if (persona == raiz){
+        return persona.getLiga();
+    }
+
+    if (persona.getSw() && persona.getLigaLista() != null){
+        return persona.getLigaLista().getLiga();
+    }
+
+    return null;
+}
+
+// Muestra el padre directo de la persona consultada
+public void mostrarPadre(String cedula){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    Nodo persona = buscarPersona(raiz, cedula);
+
+    if (persona == null){
+        JOptionPane.showMessageDialog(null,
+                "No existe una persona con esa cédula.");
+        return;
+    }
+
+    if (persona == raiz){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada es la raíz y no tiene padre registrado.");
+        return;
+    }
+
+    Nodo padre = buscarPadreNodo(raiz, cedula);
+
+    if (padre == null){
+        JOptionPane.showMessageDialog(null,
+                "No se encontró el padre de la persona.");
+        return;
+    }
+
+    JOptionPane.showMessageDialog(
+            null,
+            "PADRE\n\n"
+            + "Nombre: " + padre.getNombre()
+            + "\nCédula: " + padre.getCedula()
+            + "\nFecha: " + padre.getFecha()
+    );
+}
+
+// Muestra todos los hijos directos de la persona consultada
+public void mostrarHijos(String cedula){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    Nodo persona = buscarPersona(raiz, cedula);
+
+    if (persona == null){
+        JOptionPane.showMessageDialog(null,
+                "No existe una persona con esa cédula.");
+        return;
+    }
+
+    Nodo hijo = obtenerInicioHijos(persona);
+
+    if (hijo == null){
+        JOptionPane.showMessageDialog(null,
+                "La persona no tiene hijos registrados.");
+        return;
+    }
+
+    String mensaje = "HIJOS DE " + persona.getNombre() + "\n\n";
+
+    while (hijo != null){
+        mensaje += "Nombre: " + hijo.getNombre()
+                + "\nCédula: " + hijo.getCedula()
+                + "\nFecha: " + hijo.getFecha()
+                + "\n\n";
+
+        hijo = hijo.getLiga();
+    }
+
+    JOptionPane.showMessageDialog(null, mensaje);
+}
+
+// Muestra los hermanos de la persona consultada
+public void mostrarHermanos(String cedula){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    Nodo persona = buscarPersona(raiz, cedula);
+
+    if (persona == null){
+        JOptionPane.showMessageDialog(null,
+                "No existe una persona con esa cédula.");
+        return;
+    }
+
+    if (persona == raiz){
+        JOptionPane.showMessageDialog(null,
+                "La raíz no tiene hermanos registrados.");
+        return;
+    }
+
+    Nodo padre = buscarPadreNodo(raiz, cedula);
+
+    if (padre == null){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada no tiene hermanos registrados.");
+        return;
+    }
+
+    Nodo hermano = obtenerInicioHijos(padre);
+
+    String mensaje = "HERMANOS DE " + persona.getNombre() + "\n\n";
+    boolean hayHermanos = false;
+
+    while (hermano != null){
+
+        if (!hermano.getCedula().equals(cedula)){
+            mensaje += "Nombre: " + hermano.getNombre()
+                    + "\nCédula: " + hermano.getCedula()
+                    + "\nFecha: " + hermano.getFecha()
+                    + "\n\n";
+
+            hayHermanos = true;
+        }
+
+        hermano = hermano.getLiga();
+    }
+
+    if (!hayHermanos){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada no tiene hermanos registrados.");
+    } else {
+        JOptionPane.showMessageDialog(null, mensaje);
+    }
+}
+
+// Muestra los hermanos del padre de la persona consultada
+public void mostrarTios(String cedula){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    Nodo persona = buscarPersona(raiz, cedula);
+
+    if (persona == null){
+        JOptionPane.showMessageDialog(null,
+                "No existe una persona con esa cédula.");
+        return;
+    }
+
+    Nodo padre = buscarPadreNodo(raiz, cedula);
+
+    if (padre == null){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada no tiene tíos registrados.");
+        return;
+    }
+
+    Nodo abuelo = buscarPadreNodo(raiz, padre.getCedula());
+
+    if (abuelo == null){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada no tiene tíos registrados.");
+        return;
+    }
+
+    Nodo tio = obtenerInicioHijos(abuelo);
+
+    String mensaje = "TÍOS DE " + persona.getNombre() + "\n\n";
+    boolean hayTios = false;
+
+    while (tio != null){
+
+        if (!tio.getCedula().equals(padre.getCedula())){
+            mensaje += "Nombre: " + tio.getNombre()
+                    + "\nCédula: " + tio.getCedula()
+                    + "\nFecha: " + tio.getFecha()
+                    + "\n\n";
+
+            hayTios = true;
+        }
+
+        tio = tio.getLiga();
+    }
+
+    if (!hayTios){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada no tiene tíos registrados.");
+    } else {
+        JOptionPane.showMessageDialog(null, mensaje);
+    }
+}
+
+// Busca los hijos de los hermanos de la persona consultada
+public void mostrarSobrinos(String cedula){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    Nodo persona = buscarPersona(raiz, cedula);
+
+    if (persona == null){
+        JOptionPane.showMessageDialog(null,
+                "No existe una persona con esa cédula.");
+        return;
+    }
+
+    Nodo padre = buscarPadreNodo(raiz, cedula);
+
+    if (padre == null){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada no tiene sobrinos registrados.");
+        return;
+    }
+
+    Nodo hermano = obtenerInicioHijos(padre);
+
+    String mensaje = "SOBRINOS DE " + persona.getNombre() + "\n\n";
+    boolean haySobrinos = false;
+
+    while (hermano != null){
+
+        if (!hermano.getCedula().equals(cedula)){
+
+            Nodo sobrino = obtenerInicioHijos(hermano);
+
+            while (sobrino != null){
+
+                mensaje += "Nombre: " + sobrino.getNombre()
+                        + "\nCédula: " + sobrino.getCedula()
+                        + "\nFecha: " + sobrino.getFecha()
+                        + "\n\n";
+
+                haySobrinos = true;
+
+                sobrino = sobrino.getLiga();
+            }
+        }
+
+        hermano = hermano.getLiga();
+    }
+
+    if (!haySobrinos){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada no tiene sobrinos registrados.");
+    } else {
+        JOptionPane.showMessageDialog(null, mensaje);
+    }
+}
+
+// Busca los hijos de los tíos de la persona consultada
+public void mostrarPrimos(String cedula){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    Nodo persona = buscarPersona(raiz, cedula);
+
+    if (persona == null){
+        JOptionPane.showMessageDialog(null,
+                "No existe una persona con esa cédula.");
+        return;
+    }
+
+    Nodo padre = buscarPadreNodo(raiz, cedula);
+
+    if (padre == null){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada no tiene primos registrados.");
+        return;
+    }
+
+    Nodo abuelo = buscarPadreNodo(raiz, padre.getCedula());
+
+    if (abuelo == null){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada no tiene primos registrados.");
+        return;
+    }
+
+    Nodo tio = obtenerInicioHijos(abuelo);
+
+    String mensaje = "PRIMOS DE " + persona.getNombre() + "\n\n";
+    boolean hayPrimos = false;
+
+    while (tio != null){
+
+        if (!tio.getCedula().equals(padre.getCedula())){
+
+            Nodo primo = obtenerInicioHijos(tio);
+
+            while (primo != null){
+
+                mensaje += "Nombre: " + primo.getNombre()
+                        + "\nCédula: " + primo.getCedula()
+                        + "\nFecha: " + primo.getFecha()
+                        + "\n\n";
+
+                hayPrimos = true;
+
+                primo = primo.getLiga();
+            }
+        }
+
+        tio = tio.getLiga();
+    }
+
+    if (!hayPrimos){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada no tiene primos registrados.");
+    } else {
+        JOptionPane.showMessageDialog(null, mensaje);
+    }
+}
+
+// Muestra la línea directa de padres desde la persona hasta la raíz
+public void mostrarAncestros(String cedula){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    Nodo persona = buscarPersona(raiz, cedula);
+
+    if (persona == null){
+        JOptionPane.showMessageDialog(null,
+                "No existe una persona con esa cédula.");
+        return;
+    }
+
+    if (persona == raiz){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada es la raíz y no tiene ancestros registrados.");
+        return;
+    }
+
+    String mensaje = "ANCESTROS DE " + persona.getNombre() + "\n\n";
+
+    Nodo actual = persona;
+    boolean hayAncestros = false;
+
+    while (actual != raiz){
+
+        Nodo padre = buscarPadreNodo(raiz, actual.getCedula());
+
+        if (padre == null){
+            break;
+        }
+
+        mensaje += "Nombre: " + padre.getNombre()
+                + "\nCédula: " + padre.getCedula()
+                + "\nFecha: " + padre.getFecha()
+                + "\n\n";
+
+        hayAncestros = true;
+
+        actual = padre;
+    }
+
+    if (!hayAncestros){
+        JOptionPane.showMessageDialog(null,
+                "No se encontraron ancestros.");
+    } else {
+        JOptionPane.showMessageDialog(null, mensaje);
+    }
+}
+
+// Muestra todos los descendientes de la persona consultada
+public void mostrarDescendientes(String cedula){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    Nodo persona = buscarPersona(raiz, cedula);
+
+    if (persona == null){
+        JOptionPane.showMessageDialog(null,
+                "No existe una persona con esa cédula.");
+        return;
+    }
+
+    Nodo hijo = obtenerInicioHijos(persona);
+
+    if (hijo == null){
+        JOptionPane.showMessageDialog(null,
+                "La persona consultada no tiene descendientes.");
+        return;
+    }
+
+    String mensaje = "DESCENDIENTES DE " + persona.getNombre() + "\n\n";
+
+    mensaje += construirDescendientes(persona);
+
+    JOptionPane.showMessageDialog(null, mensaje);
+}
+
+// Recorre recursivamente hijos, nietos, bisnietos y demás descendientes
+private String construirDescendientes(Nodo persona){
+    String mensaje = "";
+
+    Nodo hijo = obtenerInicioHijos(persona);
+
+    while (hijo != null){
+
+        mensaje += "Nombre: " + hijo.getNombre()
+                + "\nCédula: " + hijo.getCedula()
+                + "\nFecha: " + hijo.getFecha()
+                + "\n\n";
+
+        mensaje += construirDescendientes(hijo);
+
+        hijo = hijo.getLiga();
+    }
+
+    return mensaje;
+}
+
+
+public void eliminarNivel(int nivelObjetivo){
     if (raiz == null){
         JOptionPane.showMessageDialog(null, "Todavía no hay datos en el árbol.");
         return;
@@ -344,7 +864,9 @@ private void cortarNivel(Nodo primero, int nivelActual, int nivelObjetivo){
         }
         actual = actual.getLiga();
     }
-}public void ancestroComun(String cedulaA, String cedulaB){
+}
+
+public void ancestroComun(String cedulaA, String cedulaB){
     if (raiz == null){
         JOptionPane.showMessageDialog(null, "Todavía no hay datos en el árbol.");
         return;
@@ -415,7 +937,9 @@ private boolean contiene(Nodo primero, String cedula){
         actual = actual.getLiga();
     }
     return false;
-}// Pequeña clase auxiliar propia (no es colección, solo agrupa dos referencias)
+}
+
+// Pequeña clase auxiliar propia (no es colección, solo agrupa dos referencias)
 private static class Resultado {
     Nodo anterior;
     Nodo entrada;

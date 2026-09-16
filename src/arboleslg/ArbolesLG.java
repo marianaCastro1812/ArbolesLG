@@ -91,37 +91,72 @@ public class ArbolesLG {
     }
 
     // ---------- 2. CONSULTAS DE RELACIONES FAMILIARES ----------
-    private static void menuRelacionesFamiliares(Arbol arbol){
+    private static void menuRelacionesFamiliares(Arbol arbol) {
         String[] opciones = {
             "Padre", "Hijos", "Hermanos", "Tíos",
             "Sobrinos", "Primos", "Ancestros", "Descendientes", "Volver"
         };
+
         int op;
+
         do {
             op = JOptionPane.showOptionDialog(
-                null, "Consultas de Relaciones Familiares:", "Relaciones Familiares",
-                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
-                null, opciones, opciones[0]
+                    null,
+                    "Consultas de Relaciones Familiares:",
+                    "Relaciones Familiares",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    opciones,
+                    opciones[0]
             );
 
-            if (op >= 0 && op <= 7){
-                String cedula = JOptionPane.showInputDialog("Cédula de la persona:");
-                if (cedula == null || cedula.isBlank()) continue;
+            if (op >= 0 && op <= 7) {
+                String cedula = JOptionPane.showInputDialog(
+                        "Cédula de la persona:"
+                );
 
-                switch (op){
-                    case 0: JOptionPane.showMessageDialog(null, "TODO: mostrarPadre(" + cedula + ")"); break;
-                    case 1: JOptionPane.showMessageDialog(null, "TODO: mostrarHijos(" + cedula + ")"); break;
-                    case 2: JOptionPane.showMessageDialog(null, "TODO: mostrarHermanos(" + cedula + ")"); break;
-                    case 3: JOptionPane.showMessageDialog(null, "TODO: mostrarTios(" + cedula + ")"); break;
-                    case 4: JOptionPane.showMessageDialog(null, "TODO: mostrarSobrinos(" + cedula + ")"); break;
-                    case 5: JOptionPane.showMessageDialog(null, "TODO: mostrarPrimos(" + cedula + ")"); break;
-                    case 6: JOptionPane.showMessageDialog(null, "TODO: mostrarAncestros(" + cedula + ")"); break;
-                    case 7: JOptionPane.showMessageDialog(null, "TODO: mostrarDescendientes(" + cedula + ")"); break;
+                if (cedula == null || cedula.isBlank()) {
+                    continue;
+                }
+
+                switch (op) {
+                    case 0:
+                        arbol.mostrarPadre(cedula);
+                        break;
+
+                    case 1:
+                        arbol.mostrarHijos(cedula);
+                        break;
+
+                    case 2:
+                        arbol.mostrarHermanos(cedula);
+                        break;
+
+                    case 3:
+                        arbol.mostrarTios(cedula);
+                        break;
+
+                    case 4:
+                        arbol.mostrarSobrinos(cedula);
+                        break;
+
+                    case 5:
+                        arbol.mostrarPrimos(cedula);
+                        break;
+
+                    case 6:
+                        arbol.mostrarAncestros(cedula);
+                        break;
+
+                    case 7:
+                        arbol.mostrarDescendientes(cedula);
+                        break;
                 }
             }
+
         } while (op != 8 && op != -1);
     }
-
     // ---------- 3. CONSULTAS ESTRUCTURALES Y VISUALIZACIÓN ----------
     private static void menuEstructural(Arbol arbol){
         String[] opciones = {
