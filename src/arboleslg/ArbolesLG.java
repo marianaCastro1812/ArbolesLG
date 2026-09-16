@@ -158,47 +158,88 @@ public class ArbolesLG {
         } while (op != 8 && op != -1);
     }
     // ---------- 3. CONSULTAS ESTRUCTURALES Y VISUALIZACIÓN ----------
-    private static void menuEstructural(Arbol arbol){
-        String[] opciones = {
-            "Visualizar Árbol", "Nodo con Mayor Grado", "Familiar más joven",
-            "Altura del Árbol", "Nivel de un Registro", "Registros por Nivel",
-            "Nodo con Mayor Nivel", "Volver"
-        };
-        int op;
-        do {
-            op = JOptionPane.showOptionDialog(
-                null, "Consultas Estructurales y Visualización:", "Estructura y Visualización",
-                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
-                null, opciones, opciones[0]
-            );
+private static void menuEstructural(Arbol arbol){
+    String[] opciones = {
+        "Visualizar Árbol",
+        "Nodo con Mayor Grado",
+        "Familiar más joven",
+        "Altura del Árbol",
+        "Nivel de un Registro",
+        "Registros por Nivel",
+        "Nodo con Mayor Nivel",
+        "Volver"
+    };
+
+    int op;
+
+    do {
+        op = JOptionPane.showOptionDialog(
+            null,
+            "Consultas Estructurales y Visualización:",
+            "Consultas Estructurales",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            opciones,
+            opciones[0]
+        );
+
+        if (op >= 0 && op <= 6){
 
             switch (op){
+
                 case 0:
-                    if (arbol.getRaiz() == null){
-                        JOptionPane.showMessageDialog(null, "Todavía no hay datos en el árbol.");
-                    } else {
-                        arbol.verArbol();
-                    }
+                    arbol.verArbol();
                     break;
-                case 1: JOptionPane.showMessageDialog(null, "TODO: nodoConMayorGrado()"); break;
-                case 2: JOptionPane.showMessageDialog(null, "TODO: familiarMasJoven()"); break;
-                case 3: JOptionPane.showMessageDialog(null, "TODO: alturaDelArbol()"); break;
+
+                case 1:
+                    arbol.mayorGrado();
+                    break;
+
+                case 2:
+                    arbol.familiarMasJoven();
+                    break;
+
+                case 3:
+                    arbol.alturaArbol();
+                    break;
+
                 case 4:
-                    String cedulaNivel = JOptionPane.showInputDialog("Cédula del registro:");
-                    if (cedulaNivel != null && !cedulaNivel.isBlank()){
-                        JOptionPane.showMessageDialog(null, "TODO: nivelDe(" + cedulaNivel + ")");
+                    String cedula = JOptionPane.showInputDialog(
+                            "Ingrese la cédula de la persona:"
+                    );
+
+                    if (cedula != null && !cedula.isBlank()){
+                        arbol.nivelRegistro(cedula);
                     }
                     break;
+
                 case 5:
-                    String nivel = JOptionPane.showInputDialog("Número de generación:");
-                    if (nivel != null && !nivel.isBlank()){
-                        JOptionPane.showMessageDialog(null, "TODO: registrosPorNivel(" + nivel + ")");
+                    String nivelTexto = JOptionPane.showInputDialog(
+                            "Ingrese el nivel que desea consultar:"
+                    );
+
+                    if (nivelTexto != null && !nivelTexto.isBlank()){
+                        try {
+                            int nivel = Integer.parseInt(nivelTexto);
+                            arbol.registrosPorNivel(nivel);
+                        } catch (NumberFormatException e){
+                            JOptionPane.showMessageDialog(
+                                    null,
+                                    "Debe ingresar un número entero."
+                            );
+                        }
                     }
                     break;
-                case 6: JOptionPane.showMessageDialog(null, "TODO: nodoConMayorNivel()"); break;
+
+                case 6:
+                    arbol.nodoMayorNivel();
+                    break;
             }
-        } while (op != 7 && op != -1);
-    }
+        }
+
+    } while (op != 7 && op != -1);
+}
 
     // ---------- 4. OTRAS OPERACIONES ----------
     private static void menuOtrasOperaciones(Arbol arbol){

@@ -138,6 +138,7 @@ public class Arbol {
         }
         
 
+
           
         
     }
@@ -819,6 +820,315 @@ private String construirDescendientes(Nodo persona){
     return mensaje;
 }
 
+
+/* ---------- 3. CONSULTAS ESTRUCTURALES Y VISUALIZACIÓN ---------- */
+
+// Muestra la persona que tiene la mayor cantidad de hijos directos
+public void mayorGrado(){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    Nodo resultado = buscarMayorGrado(raiz);
+
+    JOptionPane.showMessageDialog(null,
+            "NODO CON MAYOR GRADO\n\n"
+            + "Nombre: " + resultado.getNombre()
+            + "\nCédula: " + resultado.getCedula()
+            + "\nFecha: " + resultado.getFecha()
+            + "\nCantidad de hijos: " + contarHijos(resultado));
+}
+
+// Recorre todo el árbol y busca el nodo con mayor cantidad de hijos
+private Nodo buscarMayorGrado(Nodo actual){
+    if (actual == null){
+        return null;
+    }
+
+    Nodo mayor = actual;
+
+    Nodo hijo = obtenerInicioHijos(actual);
+
+    while (hijo != null){
+        Nodo candidato = buscarMayorGrado(hijo);
+
+        if (candidato != null &&
+                contarHijos(candidato) > contarHijos(mayor)){
+            mayor = candidato;
+        }
+
+        hijo = hijo.getLiga();
+    }
+
+    return mayor;
+}
+
+// Cuenta los hijos directos de una persona
+private int contarHijos(Nodo persona){
+    Nodo hijo = obtenerInicioHijos(persona);
+    int contador = 0;
+
+    while (hijo != null){
+        contador++;
+        hijo = hijo.getLiga();
+    }
+
+    return contador;
+}
+
+// Busca y muestra la persona más joven de todo el árbol
+public void familiarMasJoven(){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    Nodo joven = buscarMasJoven(raiz);
+
+    JOptionPane.showMessageDialog(null,
+            "FAMILIAR MÁS JOVEN\n\n"
+            + "Nombre: " + joven.getNombre()
+            + "\nCédula: " + joven.getCedula()
+            + "\nFecha: " + joven.getFecha());
+}
+
+// Recorre todo el árbol buscando la fecha de nacimiento más reciente
+private Nodo buscarMasJoven(Nodo actual){
+    Nodo joven = actual;
+
+    Nodo hijo = obtenerInicioHijos(actual);
+
+    while (hijo != null){
+        Nodo candidato = buscarMasJoven(hijo);
+
+        if (candidato.getFecha().isAfter(joven.getFecha())){
+            joven = candidato;
+        }
+
+        hijo = hijo.getLiga();
+    }
+
+    return joven;
+}
+
+// Calcula y muestra la altura total del árbol
+public void alturaArbol(){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    int altura = calcularAltura(raiz);
+
+    JOptionPane.showMessageDialog(null,
+            "ALTURA DEL ÁRBOL\n\n"
+            + "Cantidad de generaciones: " + altura);
+}
+
+// Calcula recursivamente la cantidad de niveles del árbol
+private int calcularAltura(Nodo actual){
+    if (actual == null){
+        return 0;
+    }
+
+    int mayorAltura = 0;
+
+    Nodo hijo = obtenerInicioHijos(actual);
+
+    while (hijo != null){
+        int alturaHijo = calcularAltura(hijo);
+
+        if (alturaHijo > mayorAltura){
+            mayorAltura = alturaHijo;
+        }
+
+        hijo = hijo.getLiga();
+    }
+
+    return mayorAltura + 1;
+}
+
+// Busca y muestra el nivel en el que se encuentra una persona
+public void nivelRegistro(String cedula){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    int nivel = buscarNivel(raiz, cedula, 0);
+
+    if (nivel == -1){
+        JOptionPane.showMessageDialog(null,
+                "No existe una persona con esa cédula.");
+    } else {
+        JOptionPane.showMessageDialog(null,
+                "NIVEL DEL REGISTRO\n\n"
+                + "Cédula: " + cedula
+                + "\nNivel: " + nivel);
+    }
+}
+
+// Busca recursivamente el nivel de una persona
+private int buscarNivel(Nodo actual, String cedula, int nivel){
+    if (actual == null){
+        return -1;
+    }
+
+    if (actual.getCedula().equals(cedula)){
+        return nivel;
+    }
+
+    Nodo hijo = obtenerInicioHijos(actual);
+
+    while (hijo != null){
+        int resultado = buscarNivel(hijo, cedula, nivel + 1);
+
+        if (resultado != -1){
+            return resultado;
+        }
+
+        hijo = hijo.getLiga();
+    }
+
+    return -1;
+}
+
+// Muestra todas las personas que pertenecen a un nivel específico
+public void registrosPorNivel(int nivel){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    if (nivel < 0){
+        JOptionPane.showMessageDialog(null,
+                "El nivel no puede ser negativo.");
+        return;
+    }
+
+    String mensaje = "REGISTROS DEL NIVEL " + nivel + "\n\n";
+
+    mensaje = obtenerRegistrosNivel(
+            raiz,
+            0,
+            nivel,
+            mensaje
+    );
+
+    if (mensaje.equals("REGISTROS DEL NIVEL " + nivel + "\n\n")){
+        JOptionPane.showMessageDialog(null,
+                "No existen personas en ese nivel.");
+    } else {
+        JOptionPane.showMessageDialog(null, mensaje);
+    }
+}
+
+// Recorre el árbol hasta encontrar el nivel solicitado
+private String obtenerRegistrosNivel(
+        Nodo actual,
+        int nivelActual,
+        int nivelObjetivo,
+        String mensaje){
+
+    if (actual == null){
+        return mensaje;
+    }
+
+    if (nivelActual == nivelObjetivo){
+        Nodo persona = actual;
+
+        while (persona != null){
+            mensaje += "Nombre: " + persona.getNombre()
+                    + "\nCédula: " + persona.getCedula()
+                    + "\nFecha: " + persona.getFecha()
+                    + "\n\n";
+
+            persona = persona.getLiga();
+        }
+
+        return mensaje;
+    }
+
+    Nodo hijo = obtenerInicioHijos(actual);
+
+    if (hijo != null){
+        mensaje = obtenerRegistrosNivel(
+                hijo,
+                nivelActual + 1,
+                nivelObjetivo,
+                mensaje
+        );
+    }
+
+    return mensaje;
+}
+
+// Busca y muestra la persona que se encuentra en el nivel más profundo
+public void nodoMayorNivel(){
+    if (raiz == null){
+        JOptionPane.showMessageDialog(null,
+                "Todavía no hay datos en el árbol.");
+        return;
+    }
+
+    NodoNivel resultado = buscarNodoMayorNivel(
+            raiz,
+            0,
+            new NodoNivel()
+    );
+
+    JOptionPane.showMessageDialog(null,
+            "NODO CON MAYOR NIVEL\n\n"
+            + "Nombre: " + resultado.persona.getNombre()
+            + "\nCédula: " + resultado.persona.getCedula()
+            + "\nFecha: " + resultado.persona.getFecha()
+            + "\nNivel: " + resultado.nivel);
+}
+
+// Busca recursivamente el nodo que está más profundo
+private NodoNivel buscarNodoMayorNivel(
+        Nodo actual,
+        int nivel,
+        NodoNivel mayor){
+
+    if (actual == null){
+        return mayor;
+    }
+
+    if (nivel > mayor.nivel){
+        mayor.persona = actual;
+        mayor.nivel = nivel;
+    }
+
+    Nodo hijo = obtenerInicioHijos(actual);
+
+    while (hijo != null){
+        mayor = buscarNodoMayorNivel(
+                hijo,
+                nivel + 1,
+                mayor
+        );
+
+        hijo = hijo.getLiga();
+    }
+
+    return mayor;
+}
+
+// Guarda temporalmente una persona y su nivel
+private static class NodoNivel {
+    Nodo persona;
+    int nivel = -1;
+}
+
+
+/* ---------- 4. OTRAS OPERACIONES ---------- */
 
 public void eliminarNivel(int nivelObjetivo){
     if (raiz == null){
