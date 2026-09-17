@@ -59,6 +59,7 @@ public class Arbol {
     
     
 }
+    // Busca una persona dentro de todo el árbol usando su cédula
     private Nodo buscarNodo(Nodo actual, String cedula){
     while (actual != null){
         if (!actual.getSw()){
@@ -79,6 +80,7 @@ public class Arbol {
     }
     return null;
 }
+    //Busca el nodo simple en caso de no ser padre o el auxiliar si ya lo es
     public  Nodo BuscarPadre(Nodo raiz, String cedula){
         Nodo p=raiz;
         while (p!=null ){
@@ -111,7 +113,7 @@ public class Arbol {
     
 
     public void Insertarhijo(Nodo padre, Nodo hijo) {
-        if (padre!=raiz && !padre.getSw() ) {     
+        if (padre!=raiz && !padre.getSw() ) {     //si es primer hijo crea un nodo auxiliar
         Nodo nuevo= new Nodo(padre.getNombre(),padre.getCedula(),padre.getFecha());
         padre.setSw(true);
         padre.setLigaLista(nuevo);
@@ -191,7 +193,7 @@ public boolean eliminarEnCadena(Nodo anterior, Nodo actual, String cedula){
             Nodo nuevo = actual.getLigaLista();
 
             if (nuevo.getCedula().equals(cedula)){
-                // encontramos al padre buscado -> hay que promover a su hijo mayor
+                //  hay que poner a su hijo mayor como nuevo padre
                 promover(anterior, actual, nuevo);
                 return true;
             }
@@ -208,7 +210,7 @@ public boolean eliminarEnCadena(Nodo anterior, Nodo actual, String cedula){
     return false;
 }
 
-
+//convierte los h¿hermanos en hijos del hijo mayor
 private void promover(Nodo anterior, Nodo viejo, Nodo nuevo){
     Nodo mayor = nuevo.getLiga();
     Nodo restoHermanos = mayor.getLiga();
@@ -302,34 +304,8 @@ public void actualizar(String cedula){
 
 /* ---------- 2. CONSULTAS DE RELACIONES FAMILIARES ---------- */
 
-// Busca una persona dentro de todo el árbol usando su cédula
-private Nodo buscarPersona(Nodo actual, String cedula){
-    if (actual == null){
-        return null;
-    }
 
-    if (actual.getCedula().equals(cedula)){
-        return actual;
-    }
 
-    Nodo encontrado = buscarPersona(actual.getLiga(), cedula);
-
-    if (encontrado != null){
-        return encontrado;
-    }
-
-    if (actual.getSw() && actual.getLigaLista() != null){
-        Nodo hijos = actual.getLigaLista().getLiga();
-
-        encontrado = buscarPersona(hijos, cedula);
-
-        if (encontrado != null){
-            return encontrado;
-        }
-    }
-
-    return null;
-}
 
 // Busca el padre directo de una persona usando su cédula
 private Nodo buscarPadreNodo(Nodo actual, String cedula){
@@ -404,7 +380,7 @@ public void mostrarPadre(String cedula){
         return;
     }
 
-    Nodo persona = buscarPersona(raiz, cedula);
+    Nodo persona = buscarNodo(raiz, cedula);
 
     if (persona == null){
         JOptionPane.showMessageDialog(null,
@@ -443,7 +419,7 @@ public void mostrarHijos(String cedula){
         return;
     }
 
-    Nodo persona = buscarPersona(raiz, cedula);
+    Nodo persona = buscarNodo(raiz, cedula);
 
     if (persona == null){
         JOptionPane.showMessageDialog(null,
@@ -481,7 +457,7 @@ public void mostrarHermanos(String cedula){
         return;
     }
 
-    Nodo persona = buscarPersona(raiz, cedula);
+    Nodo persona = buscarNodo(raiz, cedula);
 
     if (persona == null){
         JOptionPane.showMessageDialog(null,
@@ -538,7 +514,7 @@ public void mostrarTios(String cedula){
         return;
     }
 
-    Nodo persona = buscarPersona(raiz, cedula);
+    Nodo persona = buscarNodo(raiz, cedula);
 
     if (persona == null){
         JOptionPane.showMessageDialog(null,
@@ -597,7 +573,7 @@ public void mostrarSobrinos(String cedula){
         return;
     }
 
-    Nodo persona = buscarPersona(raiz, cedula);
+    Nodo persona = buscarNodo(raiz, cedula);
 
     if (persona == null){
         JOptionPane.showMessageDialog(null,
@@ -656,7 +632,7 @@ public void mostrarPrimos(String cedula){
         return;
     }
 
-    Nodo persona = buscarPersona(raiz, cedula);
+    Nodo persona = buscarNodo(raiz, cedula);
 
     if (persona == null){
         JOptionPane.showMessageDialog(null,
@@ -723,7 +699,7 @@ public void mostrarAncestros(String cedula){
         return;
     }
 
-    Nodo persona = buscarPersona(raiz, cedula);
+    Nodo persona = buscarNodo(raiz, cedula);
 
     if (persona == null){
         JOptionPane.showMessageDialog(null,
@@ -776,7 +752,7 @@ public void mostrarDescendientes(String cedula){
         return;
     }
 
-    Nodo persona = buscarPersona(raiz, cedula);
+    Nodo persona = buscarNodo(raiz, cedula);
 
     if (persona == null){
         JOptionPane.showMessageDialog(null,
@@ -1130,49 +1106,87 @@ private static class NodoNivel {
 
 /* ---------- 4. OTRAS OPERACIONES ---------- */
 
+
+
 public void eliminarNivel(int nivelObjetivo){
     if (raiz == null){
         JOptionPane.showMessageDialog(null, "Todavía no hay datos en el árbol.");
         return;
     }
-    if (nivelObjetivo < 0){
-        JOptionPane.showMessageDialog(null, "El nivel no puede ser negativo.");
-        return;
-    }
-
-    if (nivelObjetivo == 0){
-        raiz = null; // se elimina todo el árbol
+    if (nivelObjetivo <= 0){
+        JOptionPane.showMessageDialog(null, "No se puede eliminar el nivel 0 (el ancestro principal).");
         return;
     }
 
     if (nivelObjetivo == 1){
-        raiz.setLiga(null); // se cortan todos los hijos directos de la raíz
+        // Los hijos de la raíz desaparecen; sus nietos suben a ser hijos directos de la raíz
+        Nodo hijo = raiz.getLiga();
+        raiz.setLiga(null); // se vacía el nivel 1
+
+        while (hijo != null){
+            Nodo siguienteHijo = hijo.getLiga();
+
+            // rescatar los hijos de este nodo antes de descartarlo
+            if (hijo.getSw()){
+                Nodo nietos = hijo.getLigaLista().getLiga();
+                reengancharTodos(raiz, nietos);
+            }
+
+            hijo = siguienteHijo;
+        }
         return;
     }
 
-   
-    cortarNivel(raiz.getLiga(), 1, nivelObjetivo);
+    // Para niveles 2+, recorremos hasta el nivel anterior (nivelObjetivo - 1) y ahí hacemos lo mismo
+    procesarNivel(raiz.getLiga(), 1, nivelObjetivo);
 }
 
-
-
-private void cortarNivel(Nodo primero, int nivelActual, int nivelObjetivo){
+// Recorre hasta encontrar los nodos del nivel (nivelObjetivo - 1) y elimina sus hijos, subiendo a los nietos
+private void procesarNivel(Nodo primero, int nivelActual, int nivelObjetivo){
     Nodo actual = primero;
 
     while (actual != null){
         if (actual.getSw()){
-            Nodo nuevo = actual.getLigaLista(); 
+            Nodo representante = actual.getLigaLista();
 
             if (nivelActual + 1 == nivelObjetivo){
-             
-                actual.setSw(false);     
-                actual.setLigaLista(null); 
+                // los hijos de "representante" son el nivel a eliminar
+                Nodo hijo = representante.getLiga();
+                representante.setLiga(null); // se vacía su lista de hijos
+
+                while (hijo != null){
+                    Nodo siguienteHijo = hijo.getLiga();
+
+                    if (hijo.getSw()){
+                        Nodo nietos = hijo.getLigaLista().getLiga();
+                        reengancharTodos(representante, nietos);
+                    }
+
+                    hijo = siguienteHijo;
+                }
+
+                // si al final no quedó ningún nieto, este nodo ya no es padre
+                if (representante.getLiga() == null){
+                    actual.setSw(false);
+                    actual.setLigaLista(null);
+                }
+
             } else {
-                
-                cortarNivel(nuevo.getLiga(), nivelActual + 1, nivelObjetivo);
+                procesarNivel(representante.getLiga(), nivelActual + 1, nivelObjetivo);
             }
         }
         actual = actual.getLiga();
+    }
+}
+
+// Engancha una cadena de nodos como hijos de "nuevoPadre", uno por uno, respetando el orden por cédula
+private void reengancharTodos(Nodo nuevoPadre, Nodo cadena){
+    Nodo actual = cadena;
+    while (actual != null){
+        Nodo siguiente = actual.getLiga();
+        actual.setLiga(null);
+        Insertarhijo(nuevoPadre, actual); // reutiliza tu método, ordena automáticamente
+        actual = siguiente;
     }
 }
 
@@ -1182,18 +1196,18 @@ public void ancestroComun(String cedulaA, String cedulaB){
         return;
     }
 
-    Nodo lca = buscarLCA(raiz, cedulaA, cedulaB);
+    Nodo ac = buscarAC(raiz, cedulaA, cedulaB);
 
-    if (lca == null){
+    if (ac == null){
         JOptionPane.showMessageDialog(null, "No se encontró un ancestro común (verifica las cédulas).");
     } else {
         JOptionPane.showMessageDialog(null,
-                "El ancestro común más cercano es: " + lca.getNombre() + " (CC: " + lca.getCedula() + ")");
+                "El ancestro común más cercano es: " + ac.getNombre() + " (CC: " + ac.getCedula() + ")");
     }
 }
 
-// Devuelve el LCA de cedulaA y cedulaB dentro del subárbol que cuelga de "actual" (nivel: hermanos)
-private Nodo buscarLCA(Nodo primero, String cedulaA, String cedulaB){
+// Devuelve el Ancestro en comun de cedulaA y cedulaB dentro del subárbol que cuelga de "actual" 
+private Nodo buscarAC(Nodo primero, String cedulaA, String cedulaB){
     Nodo encontrado = null;
     int cantidadEncontrados = 0;
     Nodo actual = primero;
@@ -1208,14 +1222,14 @@ private Nodo buscarLCA(Nodo primero, String cedulaA, String cedulaB){
             cantidadEncontrados++;
             encontrado = representante;
 
-            // si el otro está en el subárbol de este mismo nodo, este nodo ya es el LCA
+            // si el otro está en el subárbol de este mismo nodo, este nodo ya es el Ancestro en Comun
             String otraCedula = esA ? cedulaB : cedulaA;
             if (actual.getSw() && contiene(representante.getLiga(), otraCedula)){
                 return representante;
             }
 
         } else if (actual.getSw()){
-            Nodo resultado = buscarLCA(representante.getLiga(), cedulaA, cedulaB);
+            Nodo resultado = buscarAC(representante.getLiga(), cedulaA, cedulaB);
             if (resultado != null){
                 cantidadEncontrados++;
                 encontrado = resultado;
@@ -1225,7 +1239,7 @@ private Nodo buscarLCA(Nodo primero, String cedulaA, String cedulaB){
         actual = actual.getLiga();
     }
 
-    // Si entre los hermanos de este nivel aparecieron A y B por separado, "primero" es el LCA visto desde arriba
+    // Si entre los hermanos de este nivel aparecieron A y B por separado, "primero" es el Ancestro en Comun visto desde arriba
     // (esto se resuelve automáticamente al burbujear hacia el nodo padre que los llamó)
     if (cantidadEncontrados >= 2){
         return primero; // marcador: señaliza que ambos aparecen en este nivel de hermanos
