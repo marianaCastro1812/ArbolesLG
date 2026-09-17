@@ -2,6 +2,7 @@ package arboleslg;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import javax.swing.JOptionPane;
 
 /**
@@ -58,6 +59,82 @@ public class Arbol {
 
     
     
+}
+
+public void Insertarhijo() {
+
+    String nombre = JOptionPane.showInputDialog(
+            "Ingresa el nombre de la persona: "
+    );
+
+    String Cedula = JOptionPane.showInputDialog(
+            "Ingresa la cedula de la persona: "
+    );
+
+    DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    LocalDate fecha = null;
+
+    // Validar fecha
+    while (fecha == null) {
+
+        String fechaTexto = JOptionPane.showInputDialog(
+                "Ingrese la fecha dd/MM/yyyy"
+        );
+
+        // Si presiona Cancelar
+        if (fechaTexto == null) {
+            return;
+        }
+
+        try {
+
+            fecha = LocalDate.parse(fechaTexto, formato);
+
+        } catch (DateTimeParseException e) {
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Fecha incorrecta.\n"
+                    + "Debe ingresar una fecha válida con el formato dd/MM/yyyy.\n"
+                    + "Ejemplo: 25/08/2005",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    Nodo nuevo = new Nodo(nombre, Cedula, fecha);
+
+    if (raiz == null) {
+
+        raiz = nuevo;
+
+    } else {
+
+        String cedulaPadre = JOptionPane.showInputDialog(
+                "Ingresa la Cedula del Padre: "
+        );
+
+        if (cedulaPadre == null) {
+            return;
+        }
+
+        Nodo padre = BuscarPadre(raiz, cedulaPadre);
+
+        if (padre == null) {
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "No existe un padre con esa cédula, revise los ancestros.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+        } else {
+
+            Insertarhijo(padre, nuevo);
+        }
+    }
 }
     // Busca una persona dentro de todo el árbol usando su cédula
     private Nodo buscarNodo(Nodo actual, String cedula){
@@ -796,10 +873,9 @@ private String construirDescendientes(Nodo persona){
     return mensaje;
 }
 
-
 /* ---------- 3. CONSULTAS ESTRUCTURALES Y VISUALIZACIÓN ---------- */
 
-// Muestra la persona que tiene la mayor cantidad de hijos directos
+// Muestra las personas que tienen la mayor cantidad de hijos directos
 public void mayorGrado(){
     if (raiz == null){
         JOptionPane.showMessageDialog(null,
@@ -807,17 +883,22 @@ public void mayorGrado(){
         return;
     }
 
-    Nodo resultado = buscarMayorGrado(raiz);
+    Nodo mayor = buscarMayorGrado(raiz);
+    int cantidadMayor = contarHijos(mayor);
 
-    JOptionPane.showMessageDialog(null,
-            "NODO CON MAYOR GRADO\n\n"
-            + "Nombre: " + resultado.getNombre()
-            + "\nCédula: " + resultado.getCedula()
-            + "\nFecha: " + resultado.getFecha()
-            + "\nCantidad de hijos: " + contarHijos(resultado));
+    String mensaje = "NODOS CON MAYOR GRADO\n\n"
+            + "Cantidad de hijos: " + cantidadMayor + "\n\n";
+
+    mensaje = mostrarMayoresGrados(
+            raiz,
+            cantidadMayor,
+            mensaje
+    );
+
+    JOptionPane.showMessageDialog(null, mensaje);
 }
 
-// Recorre todo el árbol y busca el nodo con mayor cantidad de hijos
+// Busca recursivamente el nodo que tiene el mayor grado
 private Nodo buscarMayorGrado(Nodo actual){
     if (actual == null){
         return null;
@@ -854,7 +935,41 @@ private int contarHijos(Nodo persona){
     return contador;
 }
 
-// Busca y muestra la persona más joven de todo el árbol
+// Muestra todas las personas que tienen el mayor grado
+private String mostrarMayoresGrados(
+        Nodo actual,
+        int mayor,
+        String mensaje){
+
+    if (actual == null){
+        return mensaje;
+    }
+
+    if (contarHijos(actual) == mayor){
+        mensaje += "Nombre: " + actual.getNombre()
+                + "\nCédula: " + actual.getCedula()
+                + "\nFecha: " + actual.getFecha()
+                + "\nCantidad de hijos: " + contarHijos(actual)
+                + "\n\n";
+    }
+
+    Nodo hijo = obtenerInicioHijos(actual);
+
+    while (hijo != null){
+        mensaje = mostrarMayoresGrados(
+                hijo,
+                mayor,
+                mensaje
+        );
+
+        hijo = hijo.getLiga();
+    }
+
+    return mensaje;
+}
+
+
+// Busca y muestra las personas más jóvenes de todo el árbol
 public void familiarMasJoven(){
     if (raiz == null){
         JOptionPane.showMessageDialog(null,
@@ -864,15 +979,26 @@ public void familiarMasJoven(){
 
     Nodo joven = buscarMasJoven(raiz);
 
-    JOptionPane.showMessageDialog(null,
-            "FAMILIAR MÁS JOVEN\n\n"
-            + "Nombre: " + joven.getNombre()
-            + "\nCédula: " + joven.getCedula()
-            + "\nFecha: " + joven.getFecha());
+    String mensaje = "FAMILIARES MÁS JÓVENES\n\n"
+            + "Fecha de nacimiento más reciente: "
+            + joven.getFecha()
+            + "\n\n";
+
+    mensaje = mostrarJovenes(
+            raiz,
+            joven.getFecha(),
+            mensaje
+    );
+
+    JOptionPane.showMessageDialog(null, mensaje);
 }
 
 // Recorre todo el árbol buscando la fecha de nacimiento más reciente
 private Nodo buscarMasJoven(Nodo actual){
+    if (actual == null){
+        return null;
+    }
+
     Nodo joven = actual;
 
     Nodo hijo = obtenerInicioHijos(actual);
@@ -880,7 +1006,8 @@ private Nodo buscarMasJoven(Nodo actual){
     while (hijo != null){
         Nodo candidato = buscarMasJoven(hijo);
 
-        if (candidato.getFecha().isAfter(joven.getFecha())){
+        if (candidato != null &&
+                candidato.getFecha().isAfter(joven.getFecha())){
             joven = candidato;
         }
 
@@ -889,6 +1016,39 @@ private Nodo buscarMasJoven(Nodo actual){
 
     return joven;
 }
+
+// Muestra todas las personas que tienen la fecha más reciente
+private String mostrarJovenes(
+        Nodo actual,
+        LocalDate fecha,
+        String mensaje){
+
+    if (actual == null){
+        return mensaje;
+    }
+
+    if (actual.getFecha().equals(fecha)){
+        mensaje += "Nombre: " + actual.getNombre()
+                + "\nCédula: " + actual.getCedula()
+                + "\nFecha: " + actual.getFecha()
+                + "\n\n";
+    }
+
+    Nodo hijo = obtenerInicioHijos(actual);
+
+    while (hijo != null){
+        mensaje = mostrarJovenes(
+                hijo,
+                fecha,
+                mensaje
+        );
+
+        hijo = hijo.getLiga();
+    }
+
+    return mensaje;
+}
+
 
 // Calcula y muestra la altura total del árbol
 public void alturaArbol(){
@@ -928,6 +1088,7 @@ private int calcularAltura(Nodo actual){
     return mayorAltura + 1;
 }
 
+
 // Busca y muestra el nivel en el que se encuentra una persona
 public void nivelRegistro(String cedula){
     if (raiz == null){
@@ -950,7 +1111,11 @@ public void nivelRegistro(String cedula){
 }
 
 // Busca recursivamente el nivel de una persona
-private int buscarNivel(Nodo actual, String cedula, int nivel){
+private int buscarNivel(
+        Nodo actual,
+        String cedula,
+        int nivel){
+
     if (actual == null){
         return -1;
     }
@@ -962,7 +1127,11 @@ private int buscarNivel(Nodo actual, String cedula, int nivel){
     Nodo hijo = obtenerInicioHijos(actual);
 
     while (hijo != null){
-        int resultado = buscarNivel(hijo, cedula, nivel + 1);
+        int resultado = buscarNivel(
+                hijo,
+                cedula,
+                nivel + 1
+        );
 
         if (resultado != -1){
             return resultado;
@@ -974,11 +1143,13 @@ private int buscarNivel(Nodo actual, String cedula, int nivel){
     return -1;
 }
 
-// Muestra todas las personas que pertenecen a un nivel específico
+
 public void registrosPorNivel(int nivel){
     if (raiz == null){
         JOptionPane.showMessageDialog(null,
-                "Todavía no hay datos en el árbol.");
+                "Todavía no hay datos en el árbol.",
+                "Aviso",
+                JOptionPane.WARNING_MESSAGE);
         return;
     }
 
@@ -988,64 +1159,57 @@ public void registrosPorNivel(int nivel){
         return;
     }
 
-    String mensaje = "REGISTROS DEL NIVEL " + nivel + "\n\n";
-
-    mensaje = obtenerRegistrosNivel(
-            raiz,
-            0,
-            nivel,
-            mensaje
-    );
-
-    if (mensaje.equals("REGISTROS DEL NIVEL " + nivel + "\n\n")){
-        JOptionPane.showMessageDialog(null,
-                "No existen personas en ese nivel.");
+    String mensaje;
+    if (nivel == 0){
+        mensaje = "Nombre: " + raiz.getNombre()
+                + " | CC: " + raiz.getCedula() + "\n";
     } else {
-        JOptionPane.showMessageDialog(null, mensaje);
+        mensaje = obtenerRegistrosNivel(raiz.getLiga(), 1, nivel);
     }
+
+    if (mensaje.equals("")){
+        mensaje = "No existen registros en el nivel " + nivel + ".";
+    } else {
+        mensaje = "REGISTROS DEL NIVEL " + nivel + "\n\n" + mensaje;
+    }
+
+    JOptionPane.showMessageDialog(null, mensaje);
 }
 
-// Recorre el árbol hasta encontrar el nivel solicitado
-private String obtenerRegistrosNivel(
-        Nodo actual,
-        int nivelActual,
-        int nivelObjetivo,
-        String mensaje){
+private String obtenerRegistrosNivel(Nodo primero, int nivelActual, int nivelBuscado){
+    String mensaje = "";
+    Nodo actual = primero;
 
-    if (actual == null){
-        return mensaje;
-    }
+    while (actual != null){
 
-    if (nivelActual == nivelObjetivo){
-        Nodo persona = actual;
+        Nodo persona = actual.getSw() ? actual.getLigaLista() : actual;
 
-        while (persona != null){
+        if (nivelActual == nivelBuscado){
             mensaje += "Nombre: " + persona.getNombre()
-                    + "\nCédula: " + persona.getCedula()
-                    + "\nFecha: " + persona.getFecha()
-                    + "\n\n";
-
-            persona = persona.getLiga();
+                    + " | CC: " + persona.getCedula() + "\n";
         }
 
-        return mensaje;
-    }
+        if (nivelActual < nivelBuscado
+                && actual.getSw()
+                && actual.getLigaLista() != null){
 
-    Nodo hijo = obtenerInicioHijos(actual);
+            Nodo hijos = actual.getLigaLista().getLiga();
 
-    if (hijo != null){
-        mensaje = obtenerRegistrosNivel(
-                hijo,
-                nivelActual + 1,
-                nivelObjetivo,
-                mensaje
-        );
+            if (hijos != null){
+                mensaje += obtenerRegistrosNivel(
+                        hijos,
+                        nivelActual + 1,
+                        nivelBuscado
+                );
+            }
+        }
+
+        actual = actual.getLiga();
     }
 
     return mensaje;
 }
-
-// Busca y muestra la persona que se encuentra en el nivel más profundo
+// Busca y muestra todas las personas que se encuentran en el nivel más profundo
 public void nodoMayorNivel(){
     if (raiz == null){
         JOptionPane.showMessageDialog(null,
@@ -1053,43 +1217,43 @@ public void nodoMayorNivel(){
         return;
     }
 
-    NodoNivel resultado = buscarNodoMayorNivel(
+    int mayorNivel = buscarMayorNivel(raiz, 0);
+
+    String mensaje = "NODOS CON MAYOR NIVEL\n\n"
+            + "Nivel más profundo: " + mayorNivel + "\n\n";
+
+    mensaje = mostrarNodosMayorNivel(
             raiz,
             0,
-            new NodoNivel()
+            mayorNivel,
+            mensaje
     );
 
-    JOptionPane.showMessageDialog(null,
-            "NODO CON MAYOR NIVEL\n\n"
-            + "Nombre: " + resultado.persona.getNombre()
-            + "\nCédula: " + resultado.persona.getCedula()
-            + "\nFecha: " + resultado.persona.getFecha()
-            + "\nNivel: " + resultado.nivel);
+    JOptionPane.showMessageDialog(null, mensaje);
 }
 
-// Busca recursivamente el nodo que está más profundo
-private NodoNivel buscarNodoMayorNivel(
+// Busca cuál es el nivel más profundo del árbol
+private int buscarMayorNivel(
         Nodo actual,
-        int nivel,
-        NodoNivel mayor){
+        int nivel){
 
     if (actual == null){
-        return mayor;
+        return -1;
     }
 
-    if (nivel > mayor.nivel){
-        mayor.persona = actual;
-        mayor.nivel = nivel;
-    }
+    int mayor = nivel;
 
     Nodo hijo = obtenerInicioHijos(actual);
 
     while (hijo != null){
-        mayor = buscarNodoMayorNivel(
+        int nivelHijo = buscarMayorNivel(
                 hijo,
-                nivel + 1,
-                mayor
+                nivel + 1
         );
+
+        if (nivelHijo > mayor){
+            mayor = nivelHijo;
+        }
 
         hijo = hijo.getLiga();
     }
@@ -1097,13 +1261,47 @@ private NodoNivel buscarNodoMayorNivel(
     return mayor;
 }
 
+// Muestra todas las personas que están en el nivel más profundo
+private String mostrarNodosMayorNivel(
+        Nodo actual,
+        int nivelActual,
+        int mayorNivel,
+        String mensaje){
+
+    if (actual == null){
+        return mensaje;
+    }
+
+    if (nivelActual == mayorNivel){
+        mensaje += "Nombre: " + actual.getNombre()
+                + "\nCédula: " + actual.getCedula()
+                + "\nFecha: " + actual.getFecha()
+                + "\nNivel: " + nivelActual
+                + "\n\n";
+    }
+
+    Nodo hijo = obtenerInicioHijos(actual);
+
+    while (hijo != null){
+        mensaje = mostrarNodosMayorNivel(
+                hijo,
+                nivelActual + 1,
+                mayorNivel,
+                mensaje
+        );
+
+        hijo = hijo.getLiga();
+    }
+
+    return mensaje;
+}
+
+
 // Guarda temporalmente una persona y su nivel
 private static class NodoNivel {
     Nodo persona;
     int nivel = -1;
 }
-
-
 /* ---------- 4. OTRAS OPERACIONES ---------- */
 
 
@@ -1207,7 +1405,7 @@ public void ancestroComun(String cedulaA, String cedulaB){
 }
 
 // Devuelve el Ancestro en comun de cedulaA y cedulaB dentro del subárbol que cuelga de "actual" 
-private Nodo buscarAC(Nodo primero, String cedulaA, String cedulaB){
+public Nodo buscarAC(Nodo primero, String cedulaA, String cedulaB){
     Nodo encontrado = null;
     int cantidadEncontrados = 0;
     Nodo actual = primero;
